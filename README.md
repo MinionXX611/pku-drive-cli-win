@@ -3,6 +3,8 @@
 北大网盘 Windows 原生命令行 MVP。它面向 Windows 用户提供浏览器登录、查看账号状态、浏览网盘
 目录、删除文件或目录，以及注销功能。
 
+本项目基于 [Findddx/pku-drive-cli](https://github.com/Findddx/pku-drive-cli) 开发，专注于 Windows 原生支持。
+
 这是社区维护的非官方工具，与北京大学及爱数无隶属关系。
 
 ## 支持范围
