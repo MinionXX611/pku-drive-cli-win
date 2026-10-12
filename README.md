@@ -1,11 +1,6 @@
 # pku-drive-cli-win
 
-北大网盘 Windows 原生命令行 MVP。它面向 Windows 用户提供浏览器登录、查看账号状态、浏览网盘
-目录、删除文件或目录，以及注销功能。
-
-本项目基于 [Findddx/pku-drive-cli](https://github.com/Findddx/pku-drive-cli) 开发，专注于 Windows 原生支持。
-
-这是社区维护的非官方工具，与北京大学及爱数无隶属关系。
+由 [Findddx/pku-drive-cli](https://github.com/Findddx/pku-drive-cli) 拓展的非官方北大网盘 Windows 命令行工具。它面向 Windows 用户提供浏览器登录、查看账号状态、浏览网盘目录、删除文件或目录，以及注销功能。主要解决北大网盘网页版界面无删除功能的问题。
 
 ## 支持范围
 
@@ -36,18 +31,9 @@ go test -count=1 ./...
 .\bin\pku-drive.exe version
 ```
 
-若 Go 安装在 `D:\Go` 但未加入 `PATH`，先在当前 PowerShell 会话运行：
-
-```powershell
-$env:Path = "D:\Go\bin;$env:Path"
-```
-
 构建生成的文件为 `bin\pku-drive.exe`。可将它复制到个人工具目录后从 PowerShell 或 CMD 调用。
 
 ## 从终端运行
-
-`pku-drive.exe` 是控制台程序，不是图形应用。请不要双击打开：双击会因没有传入命令而显示
-`command required`，随后临时控制台关闭，表现为“闪退”。这是预期行为，不是程序崩溃。
 
 请在已打开的 PowerShell 或 CMD 中运行，例如：
 
