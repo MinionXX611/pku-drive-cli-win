@@ -37,6 +37,9 @@ func Run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.
 	if _, ok := map[string]bool{"login": true, "status": true, "ls": true, "mkdir": true, "put": true, "get": true, "rm": true, "logout": true, "version": true}[command]; !ok {
 		return renderError(output.NewRenderer(stdout, stderr, false), usageError("unknown command"))
 	}
+	if !commandSupported(command) {
+		return renderError(output.NewRenderer(stdout, stderr, requestedJSON(args[1:])), usageError("command is not supported in this build"))
+	}
 
 	allowed := map[string]bool{"json": true}
 	if command == "login" {
@@ -102,6 +105,9 @@ func Run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.
 	renderer := output.NewRenderer(stdout, stderr, *jsonMode)
 	positionals := flags.Args()
 	isShare := shareMode != nil && *shareMode
+	if isShare && !shareModeSupported() {
+		return renderError(renderer, usageError("share link operations are not supported in this build"))
+	}
 	if err := validateArity(command, positionals, isShare); err != nil {
 		return renderError(renderer, err)
 	}

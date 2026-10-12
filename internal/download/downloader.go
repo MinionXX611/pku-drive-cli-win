@@ -1,3 +1,5 @@
+//go:build !windows
+
 // Package download coordinates verified AnyShare object downloads and atomic
 // local installation.
 package download

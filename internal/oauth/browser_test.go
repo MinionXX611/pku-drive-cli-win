@@ -1,3 +1,5 @@
+//go:build !windows
+
 package oauth_test
 
 import (

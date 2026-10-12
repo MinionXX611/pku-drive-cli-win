@@ -1,4 +1,6 @@
 // Package sharelink opens PKU AnyShare links as isolated, navigable sessions.
+//go:build !windows
+
 package sharelink
 
 import (

@@ -1,3 +1,5 @@
+//go:build !windows
+
 package download_test
 
 import (

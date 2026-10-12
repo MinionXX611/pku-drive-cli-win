@@ -1,4 +1,6 @@
-// Package securefs provides small, Linux-oriented secure persistence helpers.
+//go:build !windows
+
+// Package securefs provides small, platform-specific secure persistence helpers.
 package securefs
 
 import (

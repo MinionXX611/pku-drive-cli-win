@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/Findddx/pku-drive-cli/internal/securefs"
@@ -69,7 +69,7 @@ func (s *Store) LoadConfig() (Config, error) {
 	}
 	dir, err := securefs.OpenPrivateDir(s.paths.configDir)
 	if err != nil {
-		if errors.Is(err, syscall.ENOENT) {
+		if errors.Is(err, os.ErrNotExist) {
 			return Config{Server: DefaultServer}, nil
 		}
 		return Config{}, err
@@ -77,7 +77,7 @@ func (s *Store) LoadConfig() (Config, error) {
 	defer dir.Close()
 	var config Config
 	if err := securefs.ReadJSON0600At(dir, s.paths.configName, &config); err != nil {
-		if errors.Is(err, syscall.ENOENT) {
+		if errors.Is(err, os.ErrNotExist) {
 			return Config{Server: DefaultServer}, nil
 		}
 		return Config{}, err
@@ -156,7 +156,7 @@ func (s *Store) DeleteCredentials() error {
 	}
 	dir, err := securefs.OpenPrivateDir(s.paths.configDir)
 	if err != nil {
-		if errors.Is(err, syscall.ENOENT) {
+		if errors.Is(err, os.ErrNotExist) {
 			return nil
 		}
 		return err

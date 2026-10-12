@@ -3,7 +3,6 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -41,10 +40,10 @@ func validatePaths(paths Paths) (validatedPaths, error) {
 	}
 
 	stateToolDir := filepath.Dir(paths.UploadStateDir)
-	if filepath.Base(paths.ConfigDir) != "pku-drive-cli" {
+	if !isToolDirectoryName(filepath.Base(paths.ConfigDir)) {
 		return validatedPaths{}, fmt.Errorf("unsafe config directory: must end in pku-drive-cli")
 	}
-	if filepath.Base(stateToolDir) != "pku-drive-cli" {
+	if !isToolDirectoryName(filepath.Base(stateToolDir)) {
 		return validatedPaths{}, fmt.Errorf("unsafe state directory: must end in pku-drive-cli")
 	}
 	if paths.ConfigFile != filepath.Join(paths.ConfigDir, "config.json") {
@@ -88,28 +87,4 @@ func pathContains(parent, child string) bool {
 	return strings.HasPrefix(child, parent+string(filepath.Separator))
 }
 
-// DefaultPaths returns paths following the XDG base directory specification.
-func DefaultPaths() (Paths, error) {
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	stateHome := os.Getenv("XDG_STATE_HOME")
-	if configHome == "" || stateHome == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return Paths{}, err
-		}
-		if configHome == "" {
-			configHome = filepath.Join(home, ".config")
-		}
-		if stateHome == "" {
-			stateHome = filepath.Join(home, ".local", "state")
-		}
-	}
-	configDir := filepath.Join(configHome, "pku-drive-cli")
-	return Paths{
-		ConfigDir:       configDir,
-		ConfigFile:      filepath.Join(configDir, "config.json"),
-		CredentialsFile: filepath.Join(configDir, "credentials.json"),
-		CredentialLock:  filepath.Join(configDir, "credentials.lock"),
-		UploadStateDir:  filepath.Join(stateHome, "pku-drive-cli", "uploads"),
-	}, nil
-}
+func isToolDirectoryName(name string) bool { return name == "pku-drive-cli" || name == "pku-drive" }

@@ -1,8 +1,8 @@
 # 北大网盘轻量 CLI
 
-`pku-drive` 是面向 Linux 服务器和 SSH 终端的北大网盘命令行工具。它支持浏览器登录、
-目录浏览、文件上传与下载、创建目录、删除，以及直接下载他人分享的文件。发布包是 Linux
-amd64 静态单文件；系统中的每位用户使用自己的北大账号和凭据。
+`pku-drive` 是北大网盘命令行工具。Linux 版支持浏览器登录、目录浏览、文件上传与下载、
+创建目录、删除，以及直接下载他人分享的文件。Windows 原生 MVP 支持登录、查看状态、
+浏览目录与删除；系统中的每位用户使用自己的北大账号和凭据。
 
 ## 安装
 
@@ -29,6 +29,26 @@ sudo tar -xzf pku-drive-cli-0.3.0-linux-amd64.tar.gz --strip-components=1 -C /
 同一台机器选择一种系统安装方式即可。安装后所有用户都能运行 `pku-drive`，每位用户以
 自己的普通 Linux 账号登录；日常命令无需 `sudo`。
 
+### Windows（原生 MVP）
+
+Windows 版本不需要 WSL。安装 Go 1.22 或更高版本后，在 PowerShell 中构建：
+
+```powershell
+git clone https://github.com/MinionXX611/pku-drive-cli-win.git
+cd pku-drive-cli-win
+$env:Path = "D:\Go\bin;$env:Path" # Go 安装在其他目录时相应调整
+go test -count=1 ./...
+.\scripts\build-windows.ps1 -Version 0.3.0
+.\bin\pku-drive.exe version
+```
+
+MVP 只支持 `login`、`status`、`ls`、`rm`、`logout` 与 `version`。`mkdir`、`put`、`get`
+和分享链接命令会明确提示当前 Windows 构建尚不支持，避免使用未经 Windows 文件系统安全
+验证的上传/下载路径。
+
+配置和令牌保存在 `%APPDATA%\pku-drive`。文件内容由 Windows DPAPI 绑定到当前用户加密；
+不要复制该目录给其他 Windows 用户，也不要将其中内容提交到版本控制。
+
 ### 从源码构建
 
 ```bash
@@ -40,6 +60,10 @@ make build
 ```
 
 ## 登录
+
+Windows PowerShell 中，`pku-drive.exe login` 会打开默认浏览器，并在本地
+`127.0.0.1` 回调完成后返回终端。若浏览器不能访问该回调地址，可使用
+`pku-drive.exe login --paste-callback`，将地址栏完整 URL 粘贴回终端。
 
 服务器有桌面、VNC 或 X11 浏览器时：
 
@@ -68,19 +92,21 @@ pku-drive login --paste-callback
 
 ## 命令速查
 
+Windows MVP 请仅使用表中标为“Windows MVP”的命令。
+
 | 操作 | 命令 |
 |---|---|
-| 登录 | `pku-drive login [--paste-callback]` |
-| 查看登录状态 | `pku-drive status` |
-| 列出网盘目录 | `pku-drive ls [网盘目录]` |
+| 登录（Windows MVP） | `pku-drive login [--paste-callback]` |
+| 查看登录状态（Windows MVP） | `pku-drive status` |
+| 列出网盘目录（Windows MVP） | `pku-drive ls [网盘目录]` |
 | 创建目录 | `pku-drive mkdir '网盘目录' [--parents]` |
 | 上传文件 | `pku-drive put 本地文件 '网盘文件或目录'` |
 | 下载文件 | `pku-drive get '网盘文件' 本地文件或目录` |
 | 浏览分享链接 | `pku-drive ls --share 分享链接 [分享内目录]` |
 | 下载分享文件 | `pku-drive get --share 分享链接 本地目录 [分享内文件...]` |
-| 删除 | `pku-drive rm '网盘文件或目录' [--recursive]` |
-| 注销 | `pku-drive logout` |
-| 查看版本 | `pku-drive version` |
+| 删除（Windows MVP） | `pku-drive rm '网盘文件或目录' [--recursive]` |
+| 注销（Windows MVP） | `pku-drive logout` |
+| 查看版本（Windows MVP） | `pku-drive version` |
 
 ## 常用操作
 

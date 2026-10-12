@@ -193,6 +193,10 @@ func (c *Callback) handle(w http.ResponseWriter, r *http.Request) {
 		writeCallbackPage(w, http.StatusConflict, "授权失败：回调已处理")
 		return
 	}
+	// Prevent a keep-alive client from submitting a second callback through an
+	// already accepted connection. This must happen before Wait is released so
+	// callers can safely proceed as soon as they receive the authorization code.
+	c.server.SetKeepAlivesEnabled(false)
 	writeCallbackPage(w, status, message)
 	if flusher, ok := w.(http.Flusher); ok {
 		flusher.Flush()
