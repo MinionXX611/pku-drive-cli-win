@@ -1,248 +1,126 @@
-# 北大网盘轻量 CLI
+# pku-drive-cli-win
 
-`pku-drive` 是北大网盘命令行工具。Linux 版支持浏览器登录、目录浏览、文件上传与下载、
-创建目录、删除，以及直接下载他人分享的文件。Windows 原生 MVP 支持登录、查看状态、
-浏览目录与删除；系统中的每位用户使用自己的北大账号和凭据。Windows 版本是控制台程序，
-请从 PowerShell 或 CMD 运行，而不是双击打开 `.exe`。
+北大网盘 Windows 原生命令行 MVP。它面向 Windows 用户提供浏览器登录、查看账号状态、浏览网盘
+目录、删除文件或目录，以及注销功能。
 
-## 安装
+这是社区维护的非官方工具，与北京大学及爱数无隶属关系。
 
-### Debian / Ubuntu
+## 支持范围
 
-```bash
-curl -LO https://github.com/Findddx/pku-drive-cli/releases/download/v0.3.0/pku-drive-cli_0.3.0-1_amd64.deb
-curl -LO https://github.com/Findddx/pku-drive-cli/releases/download/v0.3.0/SHA256SUMS
-grep '  pku-drive-cli_0.3.0-1_amd64.deb$' SHA256SUMS | sha256sum -c -
-sudo apt install ./pku-drive-cli_0.3.0-1_amd64.deb
-pku-drive version
-```
+当前 Windows MVP 支持以下命令：
 
-### 其他 Linux amd64 发行版
+| 命令 | 用途 |
+|---|---|
+| `login` | 在默认浏览器中完成登录，或粘贴本机回调 URL |
+| `status` | 查看当前登录状态 |
+| `ls` | 列出网盘目录 |
+| `rm` | 删除网盘文件；使用 `--recursive` 删除目录树 |
+| `logout` | 撤销远端登录状态，或移除本机凭据 |
+| `version` | 显示版本与构建信息 |
 
-```bash
-curl -LO https://github.com/Findddx/pku-drive-cli/releases/download/v0.3.0/pku-drive-cli-0.3.0-linux-amd64.tar.gz
-curl -LO https://github.com/Findddx/pku-drive-cli/releases/download/v0.3.0/SHA256SUMS
-grep '  pku-drive-cli-0.3.0-linux-amd64.tar.gz$' SHA256SUMS | sha256sum -c -
-sudo tar -xzf pku-drive-cli-0.3.0-linux-amd64.tar.gz --strip-components=1 -C /
-/usr/local/bin/pku-drive version
-```
+`mkdir`、`put`、`get` 和分享链接相关命令尚不在 Windows MVP 的支持范围内。它们会返回
+`command is not supported in this build`，不会执行未经 Windows 文件系统安全验证的操作。
 
-同一台机器选择一种系统安装方式即可。安装后所有用户都能运行 `pku-drive`，每位用户以
-自己的普通 Linux 账号登录；日常命令无需 `sudo`。
+## 获取与构建
 
-### Windows（原生 MVP）
-
-Windows 版本不需要 WSL。安装 Go 1.22 或更高版本后，在 PowerShell 中构建：
+每次推送均由 GitHub Actions 构建 `pku-drive-windows-amd64` 制品。也可以从源码构建；需要
+Git、PowerShell 和 Go 1.22 或更高版本：
 
 ```powershell
 git clone https://github.com/MinionXX611/pku-drive-cli-win.git
 cd pku-drive-cli-win
-$env:Path = "D:\Go\bin;$env:Path" # Go 安装在其他目录时相应调整
 go test -count=1 ./...
 .\scripts\build-windows.ps1 -Version 0.3.0
 .\bin\pku-drive.exe version
 ```
 
-如果 Go 安装在 `D:\Go`，上例中的 `Path` 设置可直接使用；安装在其他位置时，请改为对应的
-`bin` 目录，或确保 `go` 已在 `PATH` 中。GitHub Actions 也会为每次推送构建
-`pku-drive-windows-amd64` 制品。
+若 Go 安装在 `D:\Go` 但未加入 `PATH`，先在当前 PowerShell 会话运行：
 
-`pku-drive.exe` 没有图形界面。双击它会以没有命令的方式启动，显示 `command required` 后
-临时控制台立即关闭，表现为“闪退”；这不是崩溃。请在已打开的 PowerShell 或 CMD 中运行，
-例如：
+```powershell
+$env:Path = "D:\Go\bin;$env:Path"
+```
+
+构建生成的文件为 `bin\pku-drive.exe`。可将它复制到个人工具目录后从 PowerShell 或 CMD 调用。
+
+## 从终端运行
+
+`pku-drive.exe` 是控制台程序，不是图形应用。请不要双击打开：双击会因没有传入命令而显示
+`command required`，随后临时控制台关闭，表现为“闪退”。这是预期行为，不是程序崩溃。
+
+请在已打开的 PowerShell 或 CMD 中运行，例如：
 
 ```powershell
 cd D:\path\to\pku-drive-cli-win
 .\bin\pku-drive.exe version
+.\bin\pku-drive.exe status --json
+```
+
+在没有登录时，`status --json` 返回 `login required`（退出码为 3），表示需要登录，并非启动
+失败。若要从快捷方式运行并保留窗口，可以将目标设为：
+
+```text
+C:\Windows\System32\cmd.exe /k "D:\path\to\pku-drive.exe version"
+```
+
+将其中路径替换为实际的可执行文件路径。
+
+## 登录与浏览目录
+
+正常登录会打开默认浏览器。完成统一身份认证后，浏览器会跳回本机 `127.0.0.1`，终端将自动
+继续：
+
+```powershell
 .\bin\pku-drive.exe login
+.\bin\pku-drive.exe status
+.\bin\pku-drive.exe ls /
+.\bin\pku-drive.exe ls '/个人文档/课题'
 ```
 
-MVP 只支持 `login`、`status`、`ls`、`rm`、`logout` 与 `version`。`mkdir`、`put`、`get`
-和分享链接命令会明确提示当前 Windows 构建尚不支持，避免使用未经 Windows 文件系统安全
-验证的上传/下载路径。
+如果浏览器无法访问本机回调地址，请使用粘贴模式：
 
-配置和令牌保存在 `%APPDATA%\pku-drive`。文件内容由 Windows DPAPI 绑定到当前用户加密；
-不要复制该目录给其他 Windows 用户，也不要将其中内容提交到版本控制。
-
-完整的 Windows 使用、登录与常见问题见 [Windows 使用说明](docs/windows.md)。
-
-### 从源码构建
-
-```bash
-git clone https://github.com/Findddx/pku-drive-cli.git
-cd pku-drive-cli
-make test
-make build
-./bin/pku-drive version
+```powershell
+.\bin\pku-drive.exe login --paste-callback
 ```
 
-## 登录
+完成认证后，将浏览器地址栏中完整的回调 URL 粘贴到正在等待的终端。该 URL 包含一次性认证
+信息，不能分享、保存或写入命令历史。
 
-Windows PowerShell 中，`pku-drive.exe login` 会打开默认浏览器，并在本地
-`127.0.0.1` 回调完成后返回终端。若浏览器不能访问该回调地址，可使用
-`pku-drive.exe login --paste-callback`，将地址栏完整 URL 粘贴回终端。
+## 删除文件和目录
 
-服务器有桌面、VNC 或 X11 浏览器时：
+网盘路径使用以 `/` 开头的绝对路径。包含空格、中文或特殊字符的路径应使用单引号：
 
-```bash
-pku-drive login
-pku-drive status
+```powershell
+# 删除文件
+.\bin\pku-drive.exe rm '/个人文档/课题/report.csv'
+
+# 删除目录及其内容；必须显式传入 --recursive
+.\bin\pku-drive.exe rm '/个人文档/课题/旧数据' --recursive
 ```
 
-通过 SSH 登录服务器、浏览器运行在本地电脑时：
+`rm` 不提供客户端二次确认。执行前请先用 `ls` 核对完整路径，尤其应谨慎使用 `--recursive`。
+通常网盘服务会将项目移入回收站，但实际结果以服务端策略为准。若网络在删除过程中中断，先
+重新列目录确认远端结果，再决定是否重试。
 
-```bash
-pku-drive login --paste-callback
+## 本机凭据与安全
+
+配置、OAuth 凭据和锁文件保存在 `%APPDATA%\pku-drive`；临时状态目录预留在
+`%LOCALAPPDATA%\pku-drive`。保存到磁盘的敏感配置内容由 Windows DPAPI 绑定到当前 Windows
+用户保护。
+
+不要复制、同步、提交或发送这些目录中的文件给其他用户。使用 `logout` 注销并尝试撤销远端
+token；只需清除本机凭据时，使用 `logout --local-only`。
+
+## 检查与问题排查
+
+提交变更前可运行：
+
+```powershell
+go test -count=1 ./...
+go vet ./...
+.\scripts\build-windows.ps1 -Version dev
+.\bin\pku-drive.exe version
 ```
 
-在本地浏览器打开终端显示的授权链接并完成统一身份认证。浏览器最后跳转到
-`http://127.0.0.1:PORT/callback?...` 后，复制地址栏中的**完整 URL**，粘贴回 SSH 终端并
-回车。页面显示无法连接不影响粘贴认证。回调 URL 含一次性认证信息，请勿分享、记录或写入
-命令历史。
-
-## 路径规则
-
-- 网盘路径是以 `/` 开头的绝对路径，例如 `'/个人文档/课题/data.csv'`。
-- 本地路径与普通 shell 命令相同，可以是相对路径或绝对路径。
-- 路径含空格、中文或 shell 特殊字符时，用单引号包围。
-- 分享链接内的路径相对于分享根目录，不以 `/` 开头，例如 `'数据/样本.csv'`。
-
-## 命令速查
-
-Windows MVP 请仅使用表中标为“Windows MVP”的命令。
-
-| 操作 | 命令 |
-|---|---|
-| 登录（Windows MVP） | `pku-drive login [--paste-callback]` |
-| 查看登录状态（Windows MVP） | `pku-drive status` |
-| 列出网盘目录（Windows MVP） | `pku-drive ls [网盘目录]` |
-| 创建目录 | `pku-drive mkdir '网盘目录' [--parents]` |
-| 上传文件 | `pku-drive put 本地文件 '网盘文件或目录'` |
-| 下载文件 | `pku-drive get '网盘文件' 本地文件或目录` |
-| 浏览分享链接 | `pku-drive ls --share 分享链接 [分享内目录]` |
-| 下载分享文件 | `pku-drive get --share 分享链接 本地目录 [分享内文件...]` |
-| 删除（Windows MVP） | `pku-drive rm '网盘文件或目录' [--recursive]` |
-| 注销（Windows MVP） | `pku-drive logout` |
-| 查看版本（Windows MVP） | `pku-drive version` |
-
-## 常用操作
-
-### 查看目录
-
-```bash
-pku-drive ls /
-pku-drive ls '/个人文档/课题'
-```
-
-### 上传文件
-
-参数顺序是 `put 本地文件 '网盘文件或目录'`：
-
-```bash
-# 上传并指定网盘文件名
-pku-drive put ./report.csv '/个人文档/课题/report.csv'
-
-# 上传到已有网盘目录，保留文件名 report.csv
-pku-drive put ./report.csv '/个人文档/课题/'
-
-# 覆盖网盘中的同名文件
-pku-drive put ./report.csv '/个人文档/课题/report.csv' --overwrite
-
-# 大文件上传；中断后重复同一命令可继续已校验的分片
-pku-drive put ./dataset.tar '/个人文档/课题/dataset.tar' --quiet
-```
-
-### 下载自己的网盘文件
-
-参数顺序是 `get '网盘文件' 本地文件或目录`：
-
-```bash
-# 下载并指定本地文件名
-pku-drive get '/个人文档/课题/report.csv' ./report.csv
-
-# 下载到已有目录，保留文件名 report.csv
-pku-drive get '/个人文档/课题/report.csv' ./downloads/
-
-# 覆盖本地同名文件
-pku-drive get '/个人文档/课题/report.csv' ./report.csv --overwrite
-```
-
-### 创建与删除目录
-
-```bash
-# 父目录已经存在
-pku-drive mkdir '/个人文档/课题/数据'
-
-# 同时创建缺少的父目录
-pku-drive mkdir '/个人文档/课题/数据/2026' --parents
-
-# 删除文件，通常移入网盘回收站
-pku-drive rm '/个人文档/课题/report.csv'
-
-# 删除目录及其中内容
-pku-drive rm '/个人文档/课题/旧数据' --recursive
-```
-
-Windows MVP 的 `rm` 与 Linux 版使用相同的远端删除接口。命令不会显示本地二次确认：执行前请
-逐字检查绝对网盘路径；删除目录必须显式传入 `--recursive`。正常情况下服务端会将项目移入
-网盘回收站，但应以网盘服务的实际策略为准。不要将未确认的通配符、相对路径或重要目录用于
-删除命令。
-
-## 下载分享链接
-
-公开分享（anonymous）可直接浏览和下载。组织范围分享（realname）先运行 `pku-drive login`
-或 `pku-drive login --paste-callback`，工具会使用当前用户身份检查访问权限。
-
-交互式选择：
-
-```bash
-mkdir -p ./downloads
-pku-drive get --share 'https://disk.pku.edu.cn/link/...' ./downloads/
-```
-
-本地目标必须是已存在的目录。单文件分享会直接下载；文件夹分享每次显示当前目录的一层
-内容，进入目录时再加载下一层，因此大型分享也能快速浏览。选择会在切换目录后保留，下载
-时维持分享中的相对目录结构。批量下载按文件逐个校验和落盘；若中途失败，终端会报告已完成
-数量，已完成文件保留在目标目录。重试时可只选择未完成文件，或确认覆盖后加入 `--overwrite`。
-
-| 按键 | 操作 |
-|---|---|
-| `↑` / `↓` 或 `k` / `j` | 移动光标 |
-| `→` 或 `l` | 进入目录 |
-| `←`、`h` 或 `Backspace` | 返回上级目录 |
-| `Space` | 选中或取消当前文件 |
-| `Enter` | 确认并开始下载 |
-| `q` 或 `Esc` | 取消 |
-
-脚本和无交互终端先用 JSON 列目录，再按相对路径下载一个或多个文件：
-
-```bash
-pku-drive ls --share 'https://disk.pku.edu.cn/link/...' --json
-pku-drive ls --share 'https://disk.pku.edu.cn/link/...' '数据' --json
-pku-drive get --share 'https://disk.pku.edu.cn/link/...' ./downloads/ \
-  'README.pdf' '数据/样本.csv' --json
-```
-
-当前版本处理无需提取码和手机验证的分享链接。相关错误处理见
-[故障排查](docs/troubleshooting.md#分享链接)。
-
-## JSON 输出
-
-在命令末尾加入 `--json` 可获得结构化结果：
-
-```bash
-pku-drive status --json
-pku-drive ls '/个人文档/课题' --json
-pku-drive put ./report.csv '/个人文档/课题/report.csv' --json
-```
-
-脚本应同时检查进程退出码和 JSON 中的 `ok` 字段。诊断信息与登录授权链接输出到 stderr。
-
-## 文档
-
-- [故障排查与高级说明](docs/troubleshooting.md)
-- [API 与兼容性说明](docs/api-notes.md)
-- [安全策略](SECURITY.md)
-- [参与贡献](CONTRIBUTING.md)
-
-本项目是社区维护的非官方工具，与北京大学及爱数无隶属关系。
+更多 Windows 操作细节和故障处理见 [Windows 使用说明](docs/windows.md) 与
+[故障排查](docs/troubleshooting.md)。请勿在 Issue、日志或截图中提供认证回调 URL、token、
+Cookie、凭据文件或个人网盘路径。
