@@ -2,7 +2,8 @@
 
 `pku-drive` 是北大网盘命令行工具。Linux 版支持浏览器登录、目录浏览、文件上传与下载、
 创建目录、删除，以及直接下载他人分享的文件。Windows 原生 MVP 支持登录、查看状态、
-浏览目录与删除；系统中的每位用户使用自己的北大账号和凭据。
+浏览目录与删除；系统中的每位用户使用自己的北大账号和凭据。Windows 版本是控制台程序，
+请从 PowerShell 或 CMD 运行，而不是双击打开 `.exe`。
 
 ## 安装
 
@@ -42,12 +43,28 @@ go test -count=1 ./...
 .\bin\pku-drive.exe version
 ```
 
+如果 Go 安装在 `D:\Go`，上例中的 `Path` 设置可直接使用；安装在其他位置时，请改为对应的
+`bin` 目录，或确保 `go` 已在 `PATH` 中。GitHub Actions 也会为每次推送构建
+`pku-drive-windows-amd64` 制品。
+
+`pku-drive.exe` 没有图形界面。双击它会以没有命令的方式启动，显示 `command required` 后
+临时控制台立即关闭，表现为“闪退”；这不是崩溃。请在已打开的 PowerShell 或 CMD 中运行，
+例如：
+
+```powershell
+cd D:\path\to\pku-drive-cli-win
+.\bin\pku-drive.exe version
+.\bin\pku-drive.exe login
+```
+
 MVP 只支持 `login`、`status`、`ls`、`rm`、`logout` 与 `version`。`mkdir`、`put`、`get`
 和分享链接命令会明确提示当前 Windows 构建尚不支持，避免使用未经 Windows 文件系统安全
 验证的上传/下载路径。
 
 配置和令牌保存在 `%APPDATA%\pku-drive`。文件内容由 Windows DPAPI 绑定到当前用户加密；
 不要复制该目录给其他 Windows 用户，也不要将其中内容提交到版本控制。
+
+完整的 Windows 使用、登录与常见问题见 [Windows 使用说明](docs/windows.md)。
 
 ### 从源码构建
 
@@ -165,6 +182,11 @@ pku-drive rm '/个人文档/课题/report.csv'
 # 删除目录及其中内容
 pku-drive rm '/个人文档/课题/旧数据' --recursive
 ```
+
+Windows MVP 的 `rm` 与 Linux 版使用相同的远端删除接口。命令不会显示本地二次确认：执行前请
+逐字检查绝对网盘路径；删除目录必须显式传入 `--recursive`。正常情况下服务端会将项目移入
+网盘回收站，但应以网盘服务的实际策略为准。不要将未确认的通配符、相对路径或重要目录用于
+删除命令。
 
 ## 下载分享链接
 

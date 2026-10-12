@@ -5,13 +5,26 @@
 
 ## 开发与检查
 
-开发环境需要 Go 1.22、GNU Make 和支持 race detector 的 C 编译工具链。提交前运行：
+Linux 开发环境需要 Go 1.22、GNU Make 和支持 race detector 的 C 编译工具链。提交前运行：
 
 ```bash
 make test
 CGO_ENABLED=0 go test ./...
 git diff --check
 ```
+
+Windows MVP 相关的变更还应在 PowerShell 中验证：
+
+```powershell
+go test -count=1 ./...
+go vet ./...
+.\scripts\build-windows.ps1 -Version dev
+.\bin\pku-drive.exe version
+```
+
+Windows 版本有意只开放 `login`、`status`、`ls`、`rm`、`logout` 与 `version`。如需启用依赖
+本地文件系统的命令，必须先实现并审查 Windows 等价的安全写入、重解析点和取消处理，而不是
+仅移除平台限制。
 
 行为变更应配套单元或协议测试，并同步更新 README 或 `docs/`。提交只包含本次修改需要的
 文件，保持 commit 信息清晰。

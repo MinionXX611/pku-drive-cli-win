@@ -4,6 +4,10 @@
 
 安全修复只发布到最新版本。请先确认问题能在仓库最新提交或最新 Release 中复现。
 
+Windows 原生 MVP 只支持登录、状态、列目录、删除和注销。Windows 凭据保存在
+`%APPDATA%\pku-drive`，其内容由当前用户的 Windows DPAPI 保护；不要在漏洞报告中附上该目录、
+其中的文件或其解密内容。
+
 ## 报告漏洞
 
 请使用本仓库的 **Security → Report a vulnerability** 私下提交报告。不要在公开 Issue、讨论、

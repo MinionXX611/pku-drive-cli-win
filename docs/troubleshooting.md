@@ -7,7 +7,11 @@
 
 - 发布包支持 Linux amd64，运行时需要系统 CA 证书；自动打开服务器浏览器时建议安装
   `xdg-utils`。
+- 此 fork 的 GitHub Actions 同时构建 Windows amd64 MVP。Windows 版不需要 WSL，但只支持
+  `login`、`status`、`ls`、`rm`、`logout` 与 `version`；它不是图形界面程序。
 - 源码构建需要 Go 1.22、GNU Make 和 GNU coreutils；race detector 需要 C 编译工具链。
+- 在 Windows 上运行源码检查和构建只需要 Go 1.22 或更高版本与 PowerShell：
+  `go test -count=1 ./...`、`go vet ./...`、`./scripts/build-windows.ps1`。
 - 制作发布包还需要 `dpkg-deb`、`jq`、GNU tar、gzip 和 `sha256sum`。
 - 登录、列目录和传输需要服务器可访问 `disk.pku.edu.cn:443` 及响应中返回的对象存储主机。
 
@@ -29,6 +33,23 @@ type -a pku-drive
 
 每位系统用户都要用自己的普通账号执行 `pku-drive login`。使用 `sudo` 登录会把凭据保存到
 root 的配置目录，普通用户随后仍会显示未登录。
+
+### Windows 可执行文件看起来“闪退”
+
+`pku-drive.exe` 是命令行程序，不能通过双击作为图形应用使用。双击时它因缺少命令而打印
+`command required`、以退出码 2 结束，Windows 随后关闭临时控制台。这是预期行为，不表示
+程序崩溃。
+
+请从已打开的 PowerShell 或 CMD 运行，便于查看完整输出：
+
+```powershell
+cd D:\path\to\pku-drive-cli-win
+.\bin\pku-drive.exe version
+.\bin\pku-drive.exe login
+```
+
+`status --json` 在未登录状态返回 `login required` 且退出码为 3，这是认证状态而非启动错误。
+Windows 的完整命令说明见 [Windows 原生 MVP 使用说明](windows.md)。
 
 ### 源码安装
 
@@ -191,13 +212,19 @@ curl -I --connect-timeout 10 https://disk.pku.edu.cn/
 提交。共享链接会话只在命令进程内存中保存，不写入凭据目录。续传状态不保存 token、
 Authorization header 或完整签名 URL。
 
+Windows MVP 将配置、凭据和锁放在 `%APPDATA%\pku-drive`，并将临时上传状态预留在
+`%LOCALAPPDATA%\pku-drive\uploads`。Windows 版本对保存在磁盘上的敏感配置使用当前用户的
+DPAPI 保护，并拒绝重解析点；其他 Windows 用户无法解密或安全地复用这些文件。不要手动复制、
+同步或提交这些目录。
+
 控制面始终验证系统 CA 与主机名。OAuth Bearer token 只发往北大网盘控制面；对象存储使用
 服务端签发的短期下载或上传授权。
 
 ## 功能范围
 
-当前发布版面向 Linux amd64 单机命令行工作流，支持单文件上传、单文件下载、分享文件批量
-选择、上传分片续传和网盘目录管理。目录同步、FUSE/WebDAV 挂载、后台 daemon、回收站管理、
-移动/复制/重命名和下载断点续传尚未纳入命令集。
+Linux 发布版面向单机命令行工作流，支持单文件上传、单文件下载、分享文件批量选择、上传分片
+续传和网盘目录管理。此 fork 的 Windows 原生 MVP 仅支持登录、状态、列目录、删除和注销，
+不支持本地文件上传、下载、创建目录或分享链接工作流。目录同步、FUSE/WebDAV 挂载、后台
+daemon、回收站管理、移动/复制/重命名和下载断点续传尚未纳入命令集。
 
 协议端点和兼容处理见 [API 与兼容性说明](api-notes.md)。

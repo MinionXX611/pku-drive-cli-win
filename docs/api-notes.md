@@ -31,8 +31,9 @@ fixture。测试数据使用虚构 token、对象 ID、URL 和证书。
 时才以相同安全状态重试兼容流程。配置中的服务端地址必须是没有 userinfo、query 和 fragment
 的绝对 HTTPS URL。
 
-凭据按用户保存在受权限约束的 XDG 配置目录。普通 API 请求携带 OAuth Bearer；首次收到
-`401` 时刷新 token 并重放一次。
+Linux 凭据按用户保存在受权限约束的 XDG 配置目录。Windows MVP 将配置与凭据保存在
+`%APPDATA%\pku-drive`，以当前 Windows 用户的 DPAPI 保护保存内容，并拒绝经过重解析点访问。
+普通 API 请求携带 OAuth Bearer；首次收到 `401` 时刷新 token 并重放一次。
 
 ## 账户、目录与下载
 
